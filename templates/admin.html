@@ -1,0 +1,42 @@
+<html>
+<head>
+    <title>Admin Panel</title>
+</head>
+<body>
+
+<h2>📊 Admin Dashboard</h2>
+
+<p>Total Checks: {{ total }}</p>
+<p>SAFE: {{ safe }}</p>
+<p>PHISHING: {{ phishing }}</p>
+
+<hr>
+
+<h3>History</h3>
+
+<table border="1">
+<tr>
+<th>ID</th>
+<th>User</th>
+<th>URL</th>
+<th>Result</th>
+<th>Date</th>
+</tr>
+
+{% for row in data %}
+<tr>
+<td>{{ row[0] }}</td>
+<td>{{ row[1] }}</td>
+<td>{{ row[2] }}</td>
+<td>{{ row[3] }}</td>
+<td>{{ row[4] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>
