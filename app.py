@@ -27,26 +27,32 @@ app.secret_key = os.environ.get("SECRET_KEY")
 
 # ✅ FIXED OTP FUNCTION (Environment Variables Used)
 def send_otp_email(to_email, otp):
-    sender_email = os.environ.get("EMAIL_USER")
-    app_password = os.environ.get("EMAIL_PASS")
+    try:
+        sender_email = os.environ.get("EMAIL_USER")
+        app_password = os.environ.get("EMAIL_PASS")
 
-    if not sender_email or not app_password:
-        print("Email credentials missing!")
-        return
+        if not sender_email or not app_password:
+            print("Email credentials missing!")
+            return
 
-    subject = "Phishing Detection OTP"
-    body = f"Your OTP is: {otp}"
+        subject = "Phishing Detection OTP"
+        body = f"Your OTP is: {otp}"
 
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = sender_email
-    msg["To"] = to_email
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = to_email
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(sender_email, app_password)
-    server.send_message(msg)
-    server.quit()
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
+        server.starttls()
+        server.login(sender_email, app_password)
+        server.send_message(msg)
+        server.quit()
+
+        print("OTP Sent Successfully")
+
+    except Exception as e:
+        print("Email Error:", e)
 
 
 # Create DB
