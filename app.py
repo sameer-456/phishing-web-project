@@ -1,11 +1,12 @@
-
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import pickle
 import smtplib
 from email.mime.text import MIMEText
 import random
-import re 
+import re
+import os
+
 # Load ML Model
 with open("phishing_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -19,10 +20,19 @@ def extract_features(url):
         url.count("http"),
         url.count(".")
     ]
+
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY")
+
+
+# ✅ FIXED OTP FUNCTION (Environment Variables Used)
 def send_otp_email(to_email, otp):
-    sender_email = "abusameer967@gmail.com"   # <-- replace
-    app_password = "plkaddsaclguebaw"     # <-- replace (no spaces)
+    sender_email = os.environ.get("EMAIL_USER")
+    app_password = os.environ.get("EMAIL_PASS")
+
+    if not sender_email or not app_password:
+        print("Email credentials missing!")
+        return
 
     subject = "Phishing Detection OTP"
     body = f"Your OTP is: {otp}"
@@ -37,12 +47,13 @@ def send_otp_email(to_email, otp):
     server.login(sender_email, app_password)
     server.send_message(msg)
     server.quit()
-app.secret_key = "supersecretkey"
+
 
 # Create DB
 def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,21 +61,27 @@ def init_db():
             password TEXT
         )
     """)
+
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
-        url TEXT,
-        result TEXT,
-        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-""")
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            url TEXT,
+            result TEXT,
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     conn.commit()
     conn.close()
+
+init_db()
+
 
 @app.route('/')
 def home():
     return render_template("login.html")
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -82,8 +99,9 @@ def register():
 
         return redirect(url_for("verify_otp"))
 
-    # THIS MUST BE OUTSIDE POST BLOCK
     return render_template("register.html")
+
+
 @app.route("/verify", methods=["GET", "POST"])
 def verify_otp():
     if request.method == "POST":
@@ -95,7 +113,10 @@ def verify_otp():
 
             conn = sqlite3.connect("users.db")
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
+            cursor.execute(
+                "INSERT INTO users (email, password) VALUES (?, ?)",
+                (email, password)
+            )
             conn.commit()
             conn.close()
 
@@ -104,6 +125,8 @@ def verify_otp():
             return "Invalid OTP"
 
     return render_template("verify.html")
+
+
 @app.route("/forgot", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
@@ -127,6 +150,8 @@ def forgot_password():
             return "Email not found"
 
     return render_template("forgot.html")
+
+
 @app.route("/verify-reset", methods=["GET", "POST"])
 def verify_reset_otp():
     if request.method == "POST":
@@ -138,6 +163,8 @@ def verify_reset_otp():
             return "Invalid OTP"
 
     return render_template("verify_reset.html")
+
+
 @app.route("/new-password", methods=["GET", "POST"])
 def new_password():
     if request.method == "POST":
@@ -146,13 +173,18 @@ def new_password():
 
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET password=? WHERE email=?", (new_pass, email))
+        cursor.execute(
+            "UPDATE users SET password=? WHERE email=?",
+            (new_pass, email)
+        )
         conn.commit()
         conn.close()
 
         return redirect(url_for("home"))
 
     return render_template("new_password.html")
+
+
 @app.route('/login', methods=["POST"])
 def login():
     email = request.form["email"]
@@ -160,24 +192,31 @@ def login():
 
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+    cursor.execute(
+        "SELECT * FROM users WHERE email=? AND password=?",
+        (email, password)
+    )
     user = cursor.fetchone()
     conn.close()
 
     if user:
-      session["user"] = email
+        session["user"] = email
 
-    # Admin auto redirect
-    if email == "abusameer967@gmail.com":
-        return redirect(url_for("admin"))
-    else:
-        return redirect(url_for("dashboard"))
+        if email == "abusameer967@gmail.com":
+            return redirect(url_for("admin"))
+        else:
+            return redirect(url_for("dashboard"))
+
+    return "Invalid Credentials"
+
 
 @app.route('/dashboard')
 def dashboard():
     if "user" in session:
         return render_template("dashboard.html")
     return redirect(url_for("home"))
+
+
 @app.route("/detect", methods=["GET", "POST"])
 def detect():
     result = None
@@ -185,7 +224,6 @@ def detect():
     if request.method == "POST":
         url = request.form["url"]
 
-        # Step 1: Validate URL format
         pattern = re.compile(
             r'^(http://|https://)?'
             r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
@@ -195,13 +233,11 @@ def detect():
             result = "⚠️ Phishing (Invalid URL Format)"
             return render_template("detect.html", result=result)
 
-        # Step 2: Extract features
         features = [extract_features(url)]
         prediction = model.predict(features)[0]
 
         result_text = "SAFE" if prediction == 0 else "PHISHING"
 
-        # Save to DB
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
         cursor.execute(
@@ -211,21 +247,19 @@ def detect():
         conn.commit()
         conn.close()
 
-        # Show message
         if prediction == 1:
             result = "⚠️ This URL is PHISHING!"
         else:
             result = "✅ This URL is SAFE!"
 
     return render_template("detect.html", result=result)
+
+
 @app.route('/admin')
 def admin():
-
-    # Login check
     if "user" not in session:
         return redirect(url_for("home"))
 
-    # Role check
     if session["user"] != "abusameer967@gmail.com":
         return "⛔ Access Denied! Admin Only."
 
@@ -253,13 +287,9 @@ def admin():
         phishing=phishing,
         history=history
     )
+
+
 @app.route('/logout')
 def logout():
     session.pop("user", None)
     return redirect(url_for("home"))
-
-import os
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
