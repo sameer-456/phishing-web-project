@@ -43,7 +43,7 @@ def send_otp_email(to_email, otp):
         msg["From"] = sender_email
         msg["To"] = to_email
 
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
+        server = smtplib.SMTP("smtp-relay.brevo.com",587)
         server.starttls()
         server.login(sender_email, app_password)
         server.send_message(msg)
