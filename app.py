@@ -4,6 +4,7 @@ import pickle
 import smtplib
 from email.mime.text import MIMEText
 import random
+import re 
 # Load ML Model
 with open("phishing_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -182,6 +183,18 @@ def detect():
 
     if request.method == "POST":
         url = request.form["url"]
+
+        # Step 1: Validate URL format
+        pattern = re.compile(
+            r'^(http://|https://)?'
+            r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
+        )
+
+        if not re.match(pattern, url):
+            result = "⚠️ Phishing (Invalid URL Format)"
+            return render_template("detect.html", result=result)
+
+        # Step 2: Extract features
         features = [extract_features(url)]
         prediction = model.predict(features)[0]
 
@@ -190,23 +203,18 @@ def detect():
         # Save to DB
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
-
         cursor.execute(
             "INSERT INTO history (username, url, result) VALUES (?, ?, ?)",
             (session.get("user", "guest"), url, result_text)
         )
-
         conn.commit()
         conn.close()
 
         # Show message
         if prediction == 1:
-            result = "⚠ This URL is PHISHING!"
+            result = "⚠️ This URL is PHISHING!"
         else:
             result = "✅ This URL is SAFE!"
-
-    return render_template("detect.html", result=result)
-
 
     return render_template("detect.html", result=result)
 @app.route('/admin')
@@ -249,6 +257,8 @@ def logout():
     session.pop("user", None)
     return redirect(url_for("home"))
 
+import os
+
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
