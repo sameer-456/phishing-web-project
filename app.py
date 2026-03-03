@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 import random
 import re
 import os
-
+import requests 
 # Load ML Model
 with open("phishing_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -26,33 +26,40 @@ app.secret_key = os.environ.get("SECRET_KEY")
 
 
 # ✅ FIXED OTP FUNCTION (Environment Variables Used)
+import requests
+import os 
 def send_otp_email(to_email, otp):
-    try:
-        sender_email = os.environ.get("EMAIL_USER")
-        app_password = os.environ.get("EMAIL_PASS")
+    api_key = os.environ.get("BREVO_API_KEY")
 
-        if not sender_email or not app_password:
-            print("Email credentials missing!")
-            return
+    if not api_key:
+        print("Brevo API key missing!")
+        return
 
-        subject = "Phishing Detection OTP"
-        body = f"Your OTP is: {otp}"
+    url = "https://api.brevo.com/v3/smtp/email"
 
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = sender_email
-        msg["To"] = to_email
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
 
-        server = smtplib.SMTP("smtp-relay.brevo.com",587)
-        server.starttls()
-        server.login(sender_email, app_password)
-        server.send_message(msg)
-        server.quit()
+    data = {
+        "sender": {
+            "name": "Phishing Detection",
+            "email": "abusameer967@gmail.com"
+        },
+        "to": [
+            {
+                "email": to_email
+            }
+        ],
+        "subject": "Phishing Detection OTP",
+        "htmlContent": f"<p>Your OTP is: <b>{otp}</b></p>"
+    }
 
-        print("OTP Sent Successfully")
+    response = requests.post(url, json=data, headers=headers)
 
-    except Exception as e:
-        print("Email Error:", e)
+    print("Brevo response:", response.text)
 
 
 # Create DB
