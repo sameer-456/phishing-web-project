@@ -104,38 +104,51 @@ def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
+    # Create users table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT,
-            password TEXT
-        )
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT,
+        password TEXT,
+        role TEXT
+    )
     """)
 
+    # Create history table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            url TEXT,
-            result TEXT,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+    CREATE TABLE IF NOT EXISTS history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        url TEXT,
+        result TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
     """)
+
+    # Create youtube history table
     cursor.execute("""
-CREATE TABLE IF NOT EXISTS youtube_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT,
-    video_url TEXT,
-    title TEXT,
-    result TEXT,
-    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
+    CREATE TABLE IF NOT EXISTS youtube_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        video_url TEXT,
+        title TEXT,
+        result TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # Create default admin
+    cursor.execute("SELECT * FROM users WHERE email='abusameer967@gmail.com'")
+    admin = cursor.fetchone()
+
+    if not admin:
+        cursor.execute(
+            "INSERT INTO users (email,password,role) VALUES (?,?,?)",
+            ("abusameer967@gmail.com", "sameersameer", "admin")
+        )
 
     conn.commit()
     conn.close()
-
-init_db()
 
 
 @app.route('/')
