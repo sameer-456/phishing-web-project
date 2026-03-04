@@ -22,6 +22,12 @@ def extract_features(url):
         url.count("http"),
         url.count(".")
     ]
+    def get_video_id(url):
+     pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11})"
+    match = re.search(pattern, url)
+    if match:
+        return match.group(1)
+    return None
 def get_video_details(video_id):
 
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
@@ -345,7 +351,7 @@ def youtube_analysis():
 
         video_url = request.form["video_url"]
 
-        video_id = video_url.split("v=")[-1]
+        video_id = get_video_id(video_url)
 
         title, description, views, channel, thumbnail = get_video_details(video_id)
 
