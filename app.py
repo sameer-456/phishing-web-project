@@ -109,8 +109,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT,
-        password TEXT,
-        role TEXT
+        password TEXT
     )
     """)
 
@@ -143,13 +142,12 @@ def init_db():
 
     if not admin:
         cursor.execute(
-            "INSERT INTO users (email,password,role) VALUES (?,?,?)",
-            ("abusameer967@gmail.com", "sameersameer", "admin")
+            "INSERT INTO users (email,password) VALUES (?,?)",
+            ("abusameer967@gmail.com", "sameersameer")
         )
 
     conn.commit()
     conn.close()
-
 
 @app.route('/')
 def home():
