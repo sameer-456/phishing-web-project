@@ -353,10 +353,12 @@ def youtube_analysis():
 
         video_id = get_video_id(video_url)
 
+        if not video_id:
+            return render_template("youtube.html", result="Invalid YouTube Link")
+
         title, description, views, channel, thumbnail = get_video_details(video_id)
 
         if title:
-
             text = (title + " " + description).lower()
 
             keywords = ["free money","bitcoin","earn money","investment","giveaway","crypto"]
