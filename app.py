@@ -315,50 +315,42 @@ def detect():
     return render_template("detect.html", result=result)
 
 
-@app.route('/admin')
+@app.route("/admin")
 def admin():
+
     if "user" not in session:
         return redirect(url_for("home"))
 
-    if session["user"] != "abusameer967@gmail.com":
-        return "⛔ Access Denied! Admin Only."
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
 
-        cursor.execute("SELECT COUNT(*) FROM history")
-        web_total = cursor.fetchone()[0]
+    # Website history count
+    cursor.execute("SELECT COUNT(*) FROM history")
+    web_total = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM youtube_history")
-        yt_total = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
+    web_safe = cursor.fetchone()[0]
 
-        total = web_total + yt_total
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
+    web_phish = cursor.fetchone()[0]
 
+    # YouTube history count
+    cursor.execute("SELECT COUNT(*) FROM youtube_history")
+    yt_total = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
-        web_safe = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Safe Video'")
+    yt_safe = cursor.fetchone()[0]
 
-        cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Safe Video'")
-        yt_safe = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Possible Phishing Video'")
+    yt_phish = cursor.fetchone()[0]
 
-        safe = web_safe + yt_safe
+    conn.close()
 
+    total = web_total + yt_total
+    safe = web_safe + yt_safe
+    phishing = web_phish + yt_phish
 
-        cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
-        web_phish = cursor.fetchone()[0]
-
-        cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Possible Phishing Video'")
-        yt_phish = cursor.fetchone()[0]
-
-        phishing = web_phish + yt_phish
-
-        conn.close()
-
-        return render_template(
-    "admin.html",
-    total=total,
-    safe=safe,
-    phishing=phishing,
-    history=history,
-    youtube_history=youtube_history
-)
+    return render_template("admin.html", total=total, safe=safe, phishing=phishing)
 @app.route("/admin/web-history")
 def web_history():
 
