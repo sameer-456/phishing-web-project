@@ -10,8 +10,8 @@ import requests
 from googleapiclient.discovery import build
 YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
 # Load ML Model
-with open("phishing_model.pkl", "rb") as f:
-    model = pickle.load(f)
+# with open("phishing_model.pkl", "rb") as f:
+#     model = pickle.load(f)
 
 def extract_features(url):
     return [
@@ -22,11 +22,16 @@ def extract_features(url):
         url.count("http"),
         url.count(".")
     ]
-    def get_video_id(url):
-     pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11})"
+
+
+def get_video_id(url):
+    # Works for youtube.com, youtu.be, shorts
+    pattern = r"(?:v=|\/shorts\/|youtu\.be\/|embed\/)([0-9A-Za-z_-]{11})"
     match = re.search(pattern, url)
+
     if match:
         return match.group(1)
+
     return None
 def get_video_details(video_id):
 
