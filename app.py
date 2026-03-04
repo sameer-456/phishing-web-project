@@ -121,6 +121,16 @@ def init_db():
             date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    cursor.execute("""
+CREATE TABLE IF NOT EXISTS youtube_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT,
+    video_url TEXT,
+    title TEXT,
+    result TEXT,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
 
     conn.commit()
     conn.close()
@@ -327,16 +337,20 @@ def admin():
 
     cursor.execute("SELECT * FROM history ORDER BY date DESC")
     history = cursor.fetchall()
+    
+    cursor.execute("SELECT * FROM youtube_history ORDER BY date DESC")
+    youtube_history = cursor.fetchall()
 
     conn.close()
 
     return render_template(
-        "admin.html",
-        total=total,
-        safe=safe,
-        phishing=phishing,
-        history=history
-    )
+    "admin.html",
+    total=total,
+    safe=safe,
+    phishing=phishing,
+    history=history,
+    youtube_history=youtube_history
+)
 
 
 @app.route('/logout')
@@ -369,9 +383,21 @@ def youtube_analysis():
             keywords = ["free money","bitcoin","earn money","investment","giveaway","crypto"]
 
             if any(word in text for word in keywords):
-                result = "⚠ Possible Phishing Video"
+               result = "⚠ Possible Phishing Video"
             else:
-                result = "✅ Safe Video"
+             result = "✅ Safe Video"
+
+    # Save YouTube analysis history
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO youtube_history (username, video_url, title, result) VALUES (?, ?, ?, ?)",
+        (session.get("user"), video_url, title, result)
+    )
+
+    conn.commit()
+    conn.close()
 
     return render_template(
         "youtube.html",
