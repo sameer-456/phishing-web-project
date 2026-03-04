@@ -9,7 +9,6 @@ import os
 import requests 
 from googleapiclient.discovery import build
 YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
-# Load ML Model
 # with open("phishing_model.pkl", "rb") as f:
 #     model = pickle.load(f)
 
@@ -383,21 +382,21 @@ def youtube_analysis():
             keywords = ["free money","bitcoin","earn money","investment","giveaway","crypto"]
 
             if any(word in text for word in keywords):
-               result = "⚠ Possible Phishing Video"
+                result = "⚠ Possible Phishing Video"
             else:
-             result = "✅ Safe Video"
+                result = "✅ Safe Video"
 
-    # Save YouTube analysis history
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
+            # SAVE TO DATABASE
+            conn = sqlite3.connect("users.db")
+            cursor = conn.cursor()
 
-    cursor.execute(
-        "INSERT INTO youtube_history (username, video_url, title, result) VALUES (?, ?, ?, ?)",
-        (session.get("user"), video_url, title, result)
-    )
+            cursor.execute(
+                "INSERT INTO youtube_history (username, video_url, title, result) VALUES (?, ?, ?, ?)",
+                (session.get("user"), video_url, title, result)
+            )
 
-    conn.commit()
-    conn.close()
+            conn.commit()
+            conn.close()
 
     return render_template(
         "youtube.html",
