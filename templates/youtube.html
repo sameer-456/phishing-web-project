@@ -11,7 +11,7 @@
 <form method="POST">
 <input type="text" name="video_url" placeholder="Paste YouTube Link" required>
 <button type="submit">Analyze</button>
-{% if thumbnail %}
+{% if result %}
 
 <br><br>
 
@@ -27,10 +27,3 @@
 
 {% endif %}
 </form>
-
-{% if result %}
-<h3>{{ result }}</h3>
-{% endif %}
-
-</body>
-</html>
