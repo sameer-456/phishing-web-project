@@ -1,4 +1,6 @@
 flask
-gunicorn
 scikit-learn
 requests
+google-api-python-client
+numpy
+pandas
