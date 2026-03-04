@@ -7,6 +7,8 @@ import random
 import re
 import os
 import requests 
+from googleapiclient.discovery import build
+YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
 # Load ML Model
 with open("phishing_model.pkl", "rb") as f:
     model = pickle.load(f)
@@ -20,9 +22,33 @@ def extract_features(url):
         url.count("http"),
         url.count(".")
     ]
+def get_video_details(video_id):
 
+    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+
+    request = youtube.videos().list(
+        part="snippet,statistics",
+        id=video_id
+    )
+
+    response = request.execute()
+
+    if response["items"]:
+        video = response["items"][0]
+
+        title = video["snippet"]["title"]
+        description = video["snippet"]["description"]
+        channel = video["snippet"]["channelTitle"]
+
+        views = video["statistics"].get("viewCount", "0")
+
+        thumbnail = video["snippet"]["thumbnails"]["high"]["url"]
+
+        return title, description, views, channel, thumbnail
+
+    return None, None, None, None, None
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = "supersecretkey123"
 
 
 # ✅ FIXED OTP FUNCTION (Environment Variables Used)
@@ -306,3 +332,41 @@ def admin():
 def logout():
     session.pop("user", None)
     return redirect(url_for("home"))
+@app.route("/youtube", methods=["GET", "POST"])
+def youtube_analysis():
+
+    result = None
+    title = None
+    channel = None
+    views = None
+    thumbnail = None
+
+    if request.method == "POST":
+
+        video_url = request.form["video_url"]
+
+        video_id = video_url.split("v=")[-1]
+
+        title, description, views, channel, thumbnail = get_video_details(video_id)
+
+        if title:
+
+            text = (title + " " + description).lower()
+
+            keywords = ["free money","bitcoin","earn money","investment","giveaway","crypto"]
+
+            if any(word in text for word in keywords):
+                result = "⚠ Possible Phishing Video"
+            else:
+                result = "✅ Safe Video"
+
+    return render_template(
+        "youtube.html",
+        result=result,
+        title=title,
+        channel=channel,
+        views=views,
+        thumbnail=thumbnail
+    )
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
