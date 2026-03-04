@@ -9,8 +9,9 @@ import os
 import requests 
 from googleapiclient.discovery import build
 YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
-# with open("phishing_model.pkl", "rb") as f:
-#     model = pickle.load(f)
+# Load ML Model
+with open("phishing_model.pkl", "rb") as f:
+     model = pickle.load(f)
 
 def extract_features(url):
     return [
