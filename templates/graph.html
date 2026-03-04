@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Detection Graph</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<h2>📊 Detection Statistics</h2>
+
+<canvas id="myChart" width="400" height="200"></canvas>
+
+<script>
+
+var safe = Number("{{ safe }}");
+var phishing = Number("{{ phishing }}");
+
+var ctx = document.getElementById("myChart").getContext("2d");
+
+new Chart(ctx, {
+
+    type: "pie",
+
+    data: {
+        labels: ["Safe", "Phishing"],
+
+        datasets: [{
+            label: "Detection Results",
+
+            data: [safe, phishing],
+
+            backgroundColor: [
+                "green",
+                "red"
+            ]
+        }]
+    },
+
+    options: {
+        responsive: true
+    }
+
+});
+
+</script>
+
+<br><br>
+
+<a href="/admin">
+<button>Back to Admin</button>
+</a>
+
+</body>
+</html>

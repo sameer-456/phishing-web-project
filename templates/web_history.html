@@ -1,0 +1,27 @@
+<h2>Website Detection History</h2>
+
+<table border="1">
+
+<tr>
+<th>ID</th>
+<th>User</th>
+<th>URL</th>
+<th>Result</th>
+<th>Date</th>
+</tr>
+
+{% for row in data %}
+<tr>
+<td>{{row[0]}}</td>
+<td>{{row[1]}}</td>
+<td>{{row[2]}}</td>
+<td>{{row[3]}}</td>
+<td>{{row[4]}}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/admin">Back to Dashboard</a>

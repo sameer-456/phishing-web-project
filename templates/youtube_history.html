@@ -1,0 +1,25 @@
+<h2>YouTube Analysis History</h2>
+
+<table border="1">
+
+<tr>
+<th>User</th>
+<th>Video Title</th>
+<th>Result</th>
+<th>Date</th>
+</tr>
+
+{% for row in data %}
+<tr>
+<td>{{row[1]}}</td>
+<td>{{row[3]}}</td>
+<td>{{row[4]}}</td>
+<td>{{row[5]}}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/admin">Back to Dashboard</a>

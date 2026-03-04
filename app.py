@@ -351,7 +351,51 @@ def admin():
     history=history,
     youtube_history=youtube_history
 )
+@app.route("/admin/web-history")
+def web_history():
 
+    if "user" not in session:
+        return redirect(url_for("home"))
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM history ORDER BY date DESC")
+    data = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("web_history.html", data=data)
+@app.route("/admin/youtube-history")
+def youtube_history_page():
+
+    if "user" not in session:
+        return redirect(url_for("home"))
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM youtube_history ORDER BY date DESC")
+    data = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("youtube_history.html", data=data)
+@app.route("/admin/graph")
+def admin_graph():
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
+    safe = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
+    phishing = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template("graph.html", safe=safe, phishing=phishing)
 
 @app.route('/logout')
 def logout():
