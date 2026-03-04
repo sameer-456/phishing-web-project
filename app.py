@@ -104,7 +104,7 @@ def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    # Create users table
+    # Users table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -113,7 +113,7 @@ def init_db():
     )
     """)
 
-    # Create history table
+    # History table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,7 +124,7 @@ def init_db():
     )
     """)
 
-    # Create youtube history table
+    # YouTube history table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS youtube_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,8 +136,8 @@ def init_db():
     )
     """)
 
-    # Create default admin
-    cursor.execute("SELECT * FROM users WHERE email='abusameer967@gmail.com'")
+    # Create admin account
+    cursor.execute("SELECT * FROM users WHERE email=?", ("abusameer967@gmail.com",))
     admin = cursor.fetchone()
 
     if not admin:
