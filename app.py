@@ -264,9 +264,9 @@ def login():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT * FROM users WHERE email=? AND password=?",
-        (email, password)
-    )
+    "SELECT * FROM users WHERE email=? AND password=?",
+    (email, password)
+)
     user = cursor.fetchone()
     conn.close()
 
