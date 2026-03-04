@@ -323,27 +323,35 @@ def admin():
     if session["user"] != "abusameer967@gmail.com":
         return "⛔ Access Denied! Admin Only."
 
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM history")
+        web_total = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM history")
-    total = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM youtube_history")
+        yt_total = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
-    safe = cursor.fetchone()[0]
+        total = web_total + yt_total
 
-    cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
-    phishing = cursor.fetchone()[0]
 
-    cursor.execute("SELECT * FROM history ORDER BY date DESC")
-    history = cursor.fetchall()
-    
-    cursor.execute("SELECT * FROM youtube_history ORDER BY date DESC")
-    youtube_history = cursor.fetchall()
+        cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
+        web_safe = cursor.fetchone()[0]
 
-    conn.close()
+        cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Safe Video'")
+        yt_safe = cursor.fetchone()[0]
 
-    return render_template(
+        safe = web_safe + yt_safe
+
+
+        cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
+        web_phish = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Possible Phishing Video'")
+        yt_phish = cursor.fetchone()[0]
+
+        phishing = web_phish + yt_phish
+
+        conn.close()
+
+        return render_template(
     "admin.html",
     total=total,
     safe=safe,
