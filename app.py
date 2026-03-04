@@ -462,6 +462,8 @@ def youtube_analysis():
         views=views,
         thumbnail=thumbnail
     )
+init_db()
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
     # deploy update
