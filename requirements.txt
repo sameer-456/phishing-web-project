@@ -4,3 +4,4 @@ requests
 google-api-python-client
 numpy
 pandas
+gunicorn
