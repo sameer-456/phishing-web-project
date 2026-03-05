@@ -8,6 +8,7 @@ import re
 import os
 import requests 
 from googleapiclient.discovery import build
+API_KEY = "AIzaSyCmxXAUkGdLrivSlnFThdppoGFya6WLGx4"
 YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
 # Load ML Model
 with open("phishing_model.pkl", "rb") as f:
@@ -22,7 +23,29 @@ def extract_features(url):
         url.count("http"),
         url.count(".")
     ]
+def check_google_safe(url):
 
+    api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={API_KEY}"
+
+    data = {
+        "client": {
+            "clientId": "phishing-detector",
+            "clientVersion": "1.0"
+        },
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+
+    response = requests.post(api_url, json=data)
+
+    if response.json():
+        return "Phishing Detected ⚠️"
+    else:
+        return "Safe ✅"
 
 def get_video_id(url):
     # Works for youtube.com, youtu.be, shorts
@@ -295,6 +318,9 @@ def detect():
     if request.method == "POST":
         url = request.form["url"]
 
+        # Google Safe Browsing check
+        google_result = check_google_safe(url)
+
         pattern = re.compile(
             r'^(http://|https://)?'
             r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
@@ -307,7 +333,13 @@ def detect():
         features = [extract_features(url)]
         prediction = model.predict(features)[0]
 
-        result_text = "SAFE" if prediction == 0 else "PHISHING"
+        # Google + ML combine result
+        if google_result == "Phishing Detected ⚠️" or prediction == 1:
+            result_text = "PHISHING"
+            result = "⚠️ This URL is PHISHING!"
+        else:
+            result_text = "SAFE"
+            result = "✅ This URL is SAFE!"
 
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
@@ -317,11 +349,6 @@ def detect():
         )
         conn.commit()
         conn.close()
-
-        if prediction == 1:
-            result = "⚠️ This URL is PHISHING!"
-        else:
-            result = "✅ This URL is SAFE!"
 
     return render_template("detect.html", result=result)
 
