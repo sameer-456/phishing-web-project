@@ -1,0 +1,152 @@
+/* BODY */
+
+body{
+margin:0;
+font-family:'Poppins', sans-serif;
+background:#f3efe9;   /* reference login page color */
+}
+
+/* MAIN CONTAINER */
+
+.container{
+display:flex;
+height:100vh;
+width:100%;
+}
+
+/* LEFT IMAGE */
+
+.left{
+flex:1;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:transparent;
+}
+
+.left img{
+width:59.4%;
+max-height:84vh;
+object-fit:contain;
+border-radius:14px;
+box-shadow:0 15px 40px rgba(0,0,0,0.15);
+}
+
+/* TEXT OVER IMAGE */
+
+.overlay{
+position:absolute;
+top:60px;
+left:60px;
+color:white;
+}
+
+.overlay h1{
+font-size:38px;
+letter-spacing:3px;
+margin:0;
+}
+
+.overlay p{
+margin-top:8px;
+font-size:16px;
+opacity:0.9;
+}
+
+/* RIGHT SIDE */
+
+.right{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+background:transparent;
+}
+
+/* LOGIN CARD */
+
+.login-card{
+background:#ffffff;
+padding:40px;
+width:420px;
+border-radius:14px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* TITLE */
+
+.login-card h2{
+margin-bottom:25px;
+font-weight:600;
+font-size:26px;
+}
+
+/* LABEL */
+
+.login-card label{
+font-size:14px;
+font-weight:500;
+}
+
+/* INPUT */
+
+.login-card input{
+width:100%;
+padding:12px;
+margin-top:6px;
+margin-bottom:16px;
+border-radius:8px;
+border:1px solid #ccc;
+font-family:'Poppins', sans-serif;
+font-size:14px;
+}
+
+/* FORGOT PASSWORD */
+
+.forgot{
+text-align:right;
+margin-bottom:20px;
+font-size:14px;
+}
+
+.forgot a{
+text-decoration:none;
+color:#2563eb;
+}
+
+/* BUTTON */
+
+button{
+width:100%;
+padding:12px;
+background:#2f2f2f;
+color:white;
+border:none;
+border-radius:25px;
+font-size:16px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:black;
+}
+
+/* REGISTER */
+
+.register-text{
+margin-top:20px;
+text-align:center;
+font-size:14px;
+}
+
+.register-text a{
+color:#2563eb;
+text-decoration:none;
+font-weight:500;
+}
+
+.register-text a:hover{
+text-decoration:underline;
+}

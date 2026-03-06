@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import sqlite3
 import pickle
 import smtplib
 from email.mime.text import MIMEText
@@ -7,21 +8,6 @@ import re
 import os
 import requests 
 from googleapiclient.discovery import build
-import psycopg2
-import sqlite3
-DATABASE_URL = os.environ.get("DATABASE_URL")
-
-conn = psycopg2.connect(DATABASE_URL)
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-id SERIAL PRIMARY KEY,
-username TEXT,
-password TEXT
-)
-""")
-conn.commit()
 API_KEY = "AIzaSyCmxXAUkGdLrivSlnFThdppoGFya6WLGx4"
 YOUTUBE_API_KEY = "AIzaSyAYwMmLVb-e4gYbZ9FTiqNOCjVEx5SXzQc"
 # Load ML Model
