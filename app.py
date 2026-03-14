@@ -382,35 +382,26 @@ def detect():
         if not url:
             return render_template("detect.html")
 
-        # -----------------------------
-        # 1️⃣ Invalid protocol
-        # -----------------------------
+        # Invalid protocol
         if not url.startswith("http://") and not url.startswith("https://"):
             result = "PHISHING"
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
-        # -----------------------------
-        # 2️⃣ Fake https
-        # -----------------------------
+        # Fake https
         if "httt" in url or "httpssss" in url:
             result = "PHISHING"
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
-        # -----------------------------
-        # 3️⃣ IP address
-        # -----------------------------
+        # IP address check
         ip_pattern = r'http[s]?://\d{1,3}(\.\d{1,3}){3}'
-
         if re.match(ip_pattern, url):
             result = "PHISHING"
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
-        # -----------------------------
-        # 4️⃣ @ symbol
-        # -----------------------------
+        # @ symbol phishing trick
         if "@" in url:
             result = "PHISHING"
             confidence = 95
@@ -418,22 +409,21 @@ def detect():
 
         try:
 
-            # -----------------------------
+            # Google Safe Browsing
+            google_result = check_google_safe(url)
+
             # ML prediction
-            # -----------------------------
             features = [extract_features(url)]
             prediction = model.predict(features)[0]
 
-            if prediction == 1:
+            if google_result == "Phishing Detected ⚠️" or prediction == 1:
                 result = "PHISHING"
             else:
                 result = "SAFE"
 
             confidence = random.randint(85, 98)
 
-            # -----------------------------
             # Save history
-            # -----------------------------
             conn = sqlite3.connect("users.db")
             cursor = conn.cursor()
 
@@ -449,8 +439,8 @@ def detect():
 
             print("ERROR:", e)
 
-            result = "SAFE"
-            confidence = 85
+            result = "PHISHING"
+            confidence = 80
 
     return render_template(
         "detect.html",
