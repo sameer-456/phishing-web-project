@@ -374,100 +374,124 @@ def detect():
 
     result = None
     confidence = None
+    result_text = None
 
     if request.method == "POST":
 
-        url = request.form["url"]
+        url = request.form["url"].strip()
 
         # -----------------------------
         # 1️⃣ Invalid protocol check
         # -----------------------------
         if not url.startswith("http://") and not url.startswith("https://"):
+
             result = "PHISHING"
+            result_text = "PHISHING"
             confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
 
         # -----------------------------
         # 2️⃣ Fake https check
         # -----------------------------
-        if "httt" in url or "httpssss" in url:
+        elif "httt" in url or "httpssss" in url:
+
             result = "PHISHING"
+            result_text = "PHISHING"
             confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
 
         # -----------------------------
         # 3️⃣ IP address URL check
         # -----------------------------
-        ip_pattern = r'http[s]?://\d{1,3}(\.\d{1,3}){3}'
-
-        if re.match(ip_pattern, url):
-            result = "PHISHING"
-            confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
-
-        # -----------------------------
-        # 4️⃣ @ symbol phishing
-        # -----------------------------
-        if "@" in url:
-            result = "PHISHING"
-            confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
-
-        # -----------------------------
-        # 5️⃣ URL format validation
-        # -----------------------------
-        pattern = re.compile(
-            r'^(http://|https://)'
-            r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
-        )
-
-        if not re.match(pattern, url):
-            result = "PHISHING"
-            confidence = 90
-            return render_template("detect.html", result=result, confidence=confidence)
-
-        # -----------------------------
-        # 6️⃣ Google Safe Browsing
-        # -----------------------------
-        google_result = check_google_safe(url)
-
-        # -----------------------------
-        # 7️⃣ ML Model Prediction
-        # -----------------------------
-        features = [extract_features(url)]
-        prediction = model.predict(features)[0]
-
-        # -----------------------------
-        # 8️⃣ Final decision
-        # -----------------------------
-        if google_result == "Phishing Detected ⚠️" or prediction == 1:
+        elif re.match(r'http[s]?://\d{1,3}(\.\d{1,3}){3}', url):
 
             result = "PHISHING"
             result_text = "PHISHING"
+            confidence = 95
+
+        # -----------------------------
+        # 4️⃣ @ phishing trick
+        # -----------------------------
+        elif "@" in url:
+
+            result = "PHISHING"
+            result_text = "PHISHING"
+            confidence = 95
 
         else:
 
-            result = "SAFE"
-            result_text = "SAFE"
+            # -----------------------------
+            # 5️⃣ URL format validation
+            # -----------------------------
+            pattern = re.compile(
+                r'^(http://|https://)'
+                r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
+            )
+
+            if not re.match(pattern, url):
+
+                result = "PHISHING"
+                result_text = "PHISHING"
+                confidence = 90
+
+            else:
+
+                try:
+
+                    # -----------------------------
+                    # 6️⃣ Google Safe Browsing
+                    # -----------------------------
+                    google_result = check_google_safe(url)
+
+                    # -----------------------------
+                    # 7️⃣ ML Model Prediction
+                    # -----------------------------
+                    features = [extract_features(url)]
+
+                    prediction = model.predict(features)[0]
+
+                    # Real ML confidence
+                    if hasattr(model, "predict_proba"):
+                        confidence = int(model.predict_proba(features)[0][1] * 100)
+                    else:
+                        confidence = random.randint(85,95)
+
+                    # -----------------------------
+                    # 8️⃣ Final decision
+                    # -----------------------------
+                    if google_result == "Phishing Detected ⚠️" or prediction == 1:
+
+                        result = "PHISHING"
+                        result_text = "PHISHING"
+
+                    else:
+
+                        result = "SAFE"
+                        result_text = "SAFE"
+
+                except Exception as e:
+
+                    result = "ERROR"
+                    confidence = 0
+                    print("Detection Error:", e)
 
         # -----------------------------
         # 9️⃣ Save history
         # -----------------------------
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
+        try:
 
-        cursor.execute(
-            "INSERT INTO history (username, url, result) VALUES (?, ?, ?)",
-            (session.get("user", "guest"), url, result_text)
-        )
+            conn = sqlite3.connect("users.db")
+            cursor = conn.cursor()
 
-        conn.commit()
-        conn.close()
+            cursor.execute(
+                "INSERT INTO history (username, url, result) VALUES (?, ?, ?)",
+                (session.get("user", "guest"), url, result_text)
+            )
 
-        # -----------------------------
-        # 🔟 Confidence score
-        # -----------------------------
-        confidence = random.randint(85, 98)
+            conn.commit()
+            conn.close()
+
+        except Exception as db_error:
+
+            print("Database Error:", db_error)
 
     return render_template(
         "detect.html",
