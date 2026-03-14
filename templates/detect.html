@@ -59,18 +59,29 @@ Scanning URL...
 
 {% if result %}
 
-<div class="mt-6 text-lg font-bold">
+<div class="mt-6 text-center">
 
-{% if result == "PHISHING" %}
-<div style="color:red;font-size:20px;">
-⚠️ Phishing Website
+    {% if result == "PHISHING" %}
+
+        <h2 style="color:#ff4d4d;font-size:22px;font-weight:bold;">
+        ⚠️ PHISHING WEBSITE DETECTED
+        </h2>
+
+    {% elif result == "SAFE" %}
+
+        <h2 style="color:#00ff9c;font-size:22px;font-weight:bold;">
+        ✅ SAFE WEBSITE
+        </h2>
+
+    {% endif %}
+
+    <p style="margin-top:10px;font-size:18px;">
+        AI Confidence Score : <b>{{confidence}}%</b>
+    </p>
+
 </div>
-{% elif result == "SAFE" %}
-<div style="color:lightgreen;font-size:20px;">
-✅ Safe Website
-</div>
+
 {% endif %}
-
 </div>
 
 <!-- Confidence score -->
