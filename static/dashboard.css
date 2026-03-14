@@ -1,0 +1,120 @@
+body{
+font-family:system-ui;
+}
+
+/* sidebar */
+
+.sidebar{
+background:linear-gradient(180deg,#0f172a,#020617);
+border-right:1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar li{
+padding:10px 12px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.sidebar li:hover{
+background:rgba(255,255,255,0.05);
+}
+
+.active{
+background:rgba(0,150,255,0.25);
+}
+
+/* cards */
+
+.card{
+padding:40px;
+text-align:center;
+border-radius:16px;
+font-size:18px;
+cursor:pointer;
+
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);
+
+backdrop-filter:blur(10px);
+transition:0.3s;
+}
+.card{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+
+text-decoration:none;
+color:white;
+cursor:pointer;
+
+padding:40px;
+border-radius:16px;
+width:100%;
+}
+.card:hover{
+transform:scale(1.05);
+}
+
+.detect{
+box-shadow:0 0 20px rgba(0,200,255,0.4);
+}
+
+.youtube{
+box-shadow:0 0 20px rgba(255,140,0,0.4);
+}
+
+/* panels */
+
+.panel{
+padding:20px;
+border-radius:14px;
+
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);
+}
+
+/* status */
+
+.status-box{
+padding:6px 12px;
+background:#111827;
+border-radius:8px;
+}
+
+.low{
+color:#22c55e;
+}
+
+/* logout */
+
+.logout{
+background:#ef4444;
+padding:6px 14px;
+border-radius:6px;
+}
+.metric-number{
+font-size:40px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.phishing{
+color:#ff4d4d;
+}
+
+.safe{
+color:#22c55e;
+}
+
+.accuracy{
+color:#38bdf8;
+}
+
+.panel{
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:14px;
+padding:25px;
+backdrop-filter:blur(10px);
+}

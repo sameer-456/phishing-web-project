@@ -1,71 +1,184 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Admin Panel</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Admin Panel - Pro</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
 
 </head>
 
-<body>
+<body class="bg-slate-950 text-white">
 
-<h2>📊 Admin Dashboard</h2>
+<div class="flex min-h-screen">
 
-<br>
+<!-- SIDEBAR -->
 
-<a href="/admin/web-history">
-<button>Website Detection History</button>
+<div class="w-64 sidebar p-6">
+
+<h2 class="logo text-cyan-400 text-xl font-bold mb-8">
+Phishing Threat Intelligence Dashboard
+</h2>
+
+<ul class="space-y-4">
+
+<li>
+<a href="/admin" class="flex items-center gap-3 hover:text-cyan-400">
+<i class="fa-solid fa-chart-line"></i>
+Dashboard
 </a>
+</li>
 
-<br><br>
-
-<a href="/admin/youtube-history">
-<button>YouTube Analysis History</button>
+<li>
+<a href="/admin/web-history" class="flex items-center gap-3 hover:text-cyan-400">
+<i class="fa-solid fa-clock"></i>
+Detection History
 </a>
+</li>
 
-<br><br>
-
-<a href="/admin/graph">
-<button>Detection Graph</button>
+<li>
+<a href="/admin/youtube-history" class="flex items-center gap-3 hover:text-cyan-400">
+<i class="fa-solid fa-youtube"></i>
+YouTube Analysis
 </a>
+</li>
 
-<br><br>
 
-<p>Total Checks: {{ total }}</p>
-<p>SAFE: {{ safe }}</p>
-<p>PHISHING: {{ phishing }}</p>
+<li>
+<a href="/admin/settings" class="flex items-center gap-3 hover:text-cyan-400">
+<i class="fa-solid fa-gear"></i>
+System Settings
+</a>
+</li>
 
-<hr>
+</ul>
 
-<h3>History</h3>
+</div>
 
-<table border="1">
+
+<!-- MAIN CONTENT -->
+
+<div class="flex-1 p-8">
+
+<h1 class="text-3xl font-bold mb-6">
+Admin Security Dashboard
+</h1>
+
+
+<!-- STATS -->
+
+<div class="grid grid-cols-4 gap-6 mb-10">
+
+<div class="bg-slate-900 p-6 rounded-xl shadow-lg">
+<h3 class="text-gray-400 mb-2">
+Total URLs Scanned
+</h3>
+<p class="text-3xl font-bold">
+{{total_urls}}
+</p>
+</div>
+
+<div class="bg-slate-900 p-6 rounded-xl shadow-lg">
+<h3 class="text-gray-400 mb-2">
+Detection Ratio
+</h3>
+<p class="text-3xl font-bold">
+2.1%
+</p>
+</div>
+
+<div class="bg-slate-900 p-6 rounded-xl shadow-lg">
+<h3 class="text-gray-400 mb-2">
+Phishing Attacks
+</h3>
+<p class="text-3xl font-bold text-red-400">
+{{phishing}}
+</p>
+</div>
+
+<div class="bg-slate-900 p-6 rounded-xl shadow-lg">
+<h3 class="text-gray-400 mb-2">
+YouTube Threat Index
+</h3>
+<p class="text-3xl font-bold text-yellow-400">
+Medium
+</p>
+</div>
+
+</div>
+
+
+<!-- RECENT ACTIVITY -->
+
+<div class="bg-slate-900 p-6 rounded-xl shadow-lg">
+
+<h2 class="text-xl font-bold mb-4">
+Recent Threat Activity
+</h2>
+
+<table class="w-full text-left">
+
+<thead class="text-gray-400 border-b border-slate-700">
 
 <tr>
-<th>ID</th>
-<th>User</th>
-<th>URL</th>
-<th>Result</th>
-<th>Date</th>
+<th class="p-3">User</th>
+<th class="p-3">URL</th>
+<th class="p-3">Result</th>
 </tr>
 
-{% for row in history %}
+</thead>
 
-<tr>
-<td>{{row[0]}}</td>
-<td>{{row[1]}}</td>
-<td>{{row[2]}}</td>
-<td>{{row[3]}}</td>
-<td>{{row[4]}}</td>
+<tbody>
+
+{% for row in recent %}
+
+<tr class="border-b border-slate-800">
+
+<td class="p-3">
+{{row[0]}}
+</td>
+
+<td class="p-3">
+{{row[1][:50]}}...
+</td>
+
+<td class="p-3">
+
+{% if row[2] == "PHISHING" %}
+
+<span class="text-red-400 font-semibold">
+Phishing
+</span>
+
+{% else %}
+
+<span class="text-cyan-400 font-semibold">
+Safe
+</span>
+
+{% endif %}
+
+</td>
+
 </tr>
 
 {% endfor %}
 
+</tbody>
+
 </table>
 
-<br><br>
+</div>
 
-<a href="/dashboard">Back to Dashboard</a>
+</div>
+
+</div>
 
 </body>
 

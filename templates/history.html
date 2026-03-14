@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>History</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-white p-10">
+
+<h1 class="text-3xl mb-6">Scan History</h1>
+
+<table class="table-auto w-full border">
+
+<tr class="bg-slate-800">
+<th class="p-3">URL</th>
+<th class="p-3">Result</th>
+</tr>
+
+{% for row in data %}
+<tr class="border-t">
+<td class="p-3">{{ row[0] }}</td>
+<td class="p-3">{{ row[1] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</body>
+</html>

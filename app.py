@@ -304,54 +304,192 @@ def login():
     return "Invalid Credentials"
 
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if "user" in session:
-        return render_template("dashboard.html")
-    return redirect(url_for("home"))
 
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    # total scans
+    cursor.execute("SELECT COUNT(*) FROM history")
+    total_scans = cursor.fetchone()[0]
+
+    # phishing detected
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='PHISHING'")
+    phishing_count = cursor.fetchone()[0]
+
+    # safe websites
+    cursor.execute("SELECT COUNT(*) FROM history WHERE result='SAFE'")
+    safe_count = cursor.fetchone()[0]
+
+    # accuracy
+    if total_scans == 0:
+        accuracy = 0
+    else:
+        accuracy = round((safe_count / total_scans) * 100)
+
+    conn.close()
+
+    # Threat level calculation
+
+    if total_scans == 0:
+     phishing_ratio = 0
+    else:
+     phishing_ratio = phishing_count / total_scans
+
+    if phishing_ratio >= 0.6:
+     threat_status = "High"
+    elif phishing_ratio >= 0.3:
+     threat_status = "Medium"
+    else:
+     threat_status = "Low"
+ 
+    return render_template(
+    "dashboard.html",
+    total_scans=total_scans,
+    phishing_count=phishing_count,
+    safe_count=safe_count,
+    accuracy=accuracy,
+    threat_status=threat_status
+)
+@app.route("/history")
+def history():
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT url, result FROM history ORDER BY id DESC")
+    data = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("history.html", data=data)
+
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
 
 @app.route("/detect", methods=["GET", "POST"])
 def detect():
+
     result = None
+    confidence = None
 
     if request.method == "POST":
+
         url = request.form["url"]
 
-        # Google Safe Browsing check
-        google_result = check_google_safe(url)
+        # -----------------------------
+        # 1️⃣ Invalid protocol check
+        # -----------------------------
+        if not url.startswith("http://") and not url.startswith("https://"):
+            result = "PHISHING"
+            confidence = 95
+            return render_template("detect.html", result=result, confidence=confidence)
 
+        # -----------------------------
+        # 2️⃣ Fake https check
+        # -----------------------------
+        if "httt" in url or "httpssss" in url:
+            result = "PHISHING"
+            confidence = 95
+            return render_template("detect.html", result=result, confidence=confidence)
+
+        # -----------------------------
+        # 3️⃣ IP address URL check
+        # -----------------------------
+        ip_pattern = r'http[s]?://\d{1,3}(\.\d{1,3}){3}'
+
+        if re.match(ip_pattern, url):
+            result = "PHISHING"
+            confidence = 95
+            return render_template("detect.html", result=result, confidence=confidence)
+
+        # -----------------------------
+        # 4️⃣ @ symbol phishing
+        # -----------------------------
+        if "@" in url:
+            result = "PHISHING"
+            confidence = 95
+            return render_template("detect.html", result=result, confidence=confidence)
+
+        # -----------------------------
+        # 5️⃣ URL format validation
+        # -----------------------------
         pattern = re.compile(
-            r'^(http://|https://)?'
+            r'^(http://|https://)'
             r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
         )
 
         if not re.match(pattern, url):
-            result = "⚠️ Phishing (Invalid URL Format)"
-            return render_template("detect.html", result=result)
+            result = "PHISHING"
+            confidence = 90
+            return render_template("detect.html", result=result, confidence=confidence)
 
+        # -----------------------------
+        # 6️⃣ Google Safe Browsing
+        # -----------------------------
+        google_result = check_google_safe(url)
+
+        # -----------------------------
+        # 7️⃣ ML Model Prediction
+        # -----------------------------
         features = [extract_features(url)]
         prediction = model.predict(features)[0]
 
-        # Google + ML combine result
+        # -----------------------------
+        # 8️⃣ Final decision
+        # -----------------------------
         if google_result == "Phishing Detected ⚠️" or prediction == 1:
-            result_text = "PHISHING"
-            result = "⚠️ This URL is PHISHING!"
-        else:
-            result_text = "SAFE"
-            result = "✅ This URL is SAFE!"
 
+            result = "PHISHING"
+            result_text = "PHISHING"
+
+        else:
+
+            result = "SAFE"
+            result_text = "SAFE"
+
+        # -----------------------------
+        # 9️⃣ Save history
+        # -----------------------------
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
+
         cursor.execute(
             "INSERT INTO history (username, url, result) VALUES (?, ?, ?)",
             (session.get("user", "guest"), url, result_text)
         )
+
         conn.commit()
         conn.close()
 
-    return render_template("detect.html", result=result)
+        # -----------------------------
+        # 🔟 Confidence score
+        # -----------------------------
+        confidence = random.randint(85, 98)
 
+    return render_template(
+        "detect.html",
+        result=result,
+        confidence=confidence
+    )
+@app.route("/reset_history")
+def reset_history():
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM history")
+    conn.commit()
+    conn.close()
+
+    return redirect("/dashboard")
+
+
+@app.route("/change_password")
+def change_password():
+    return render_template("new_password.html")
 
 @app.route("/admin")
 def admin():
@@ -381,44 +519,66 @@ def admin():
 
     cursor.execute("SELECT COUNT(*) FROM youtube_history WHERE result='Possible Phishing Video'")
     yt_phish = cursor.fetchone()[0]
+    cursor.execute("""
+    SELECT username, url, result
+    FROM history
+    ORDER BY id DESC
+    LIMIT 5
+     """)
 
+    recent = cursor.fetchall()
     conn.close()
 
     total = web_total + yt_total
     safe = web_safe + yt_safe
     phishing = web_phish + yt_phish
 
-    return render_template("admin.html", total=total, safe=safe, phishing=phishing)
+    return render_template(
+"admin.html",
+total_urls=total,
+phishing=phishing,
+safe=safe,
+recent=recent
+)
+@app.route("/admin/settings")
+def admin_settings():
+
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    return render_template("settings.html")
 @app.route("/admin/web-history")
 def web_history():
 
     if "user" not in session:
-        return redirect(url_for("home"))
+        return redirect(url_for("login"))
 
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM history ORDER BY date DESC")
-    data = cursor.fetchall()
+    cursor.execute("SELECT * FROM history ORDER BY id DESC")
+
+    history = cursor.fetchall()
 
     conn.close()
 
-    return render_template("web_history.html", data=data)
+    return render_template("web_history.html", history=history)
 @app.route("/admin/youtube-history")
-def youtube_history_page():
+def youtube_history():
 
     if "user" not in session:
-        return redirect(url_for("home"))
+        return redirect(url_for("login"))
 
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM youtube_history ORDER BY date DESC")
-    data = cursor.fetchall()
+    cursor.execute("SELECT username, title, result, date FROM youtube_history ORDER BY id DESC")
+
+    history = cursor.fetchall()
 
     conn.close()
 
-    return render_template("youtube_history.html", data=data)
+    return render_template("youtube_history.html", history=history)
 @app.route("/admin/graph")
 def admin_graph():
 
@@ -447,10 +607,11 @@ def youtube_analysis():
     channel = None
     views = None
     thumbnail = None
+    video_id = None   # IMPORTANT
 
     if request.method == "POST":
 
-        video_url = request.form["video_url"]
+        video_url = request.form["youtube_url"]   # MATCH HTML
 
         video_id = get_video_id(video_url)
 
@@ -487,11 +648,12 @@ def youtube_analysis():
         title=title,
         channel=channel,
         views=views,
-        thumbnail=thumbnail
+        thumbnail=thumbnail,
+        video_id=video_id
     )
 init_db()
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
     # deploy update

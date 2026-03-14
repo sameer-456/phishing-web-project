@@ -1,27 +1,128 @@
-<h2>Website Detection History</h2>
+<!DOCTYPE html>
+<html lang="en">
 
-<table border="1">
+<head>
 
-<tr>
+<meta charset="UTF-8">
+<title>Website Detection History</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+
+</head>
+
+<body class="bg-slate-950 text-white">
+
+<div class="flex">
+
+<!-- SIDEBAR -->
+
+<div class="w-64 sidebar">
+
+<h2 class="logo">
+Phishing Threat Intelligence Dashboard
+</h2>
+
+<ul>
+
+<li>
+<a href="/admin">
+Dashboard
+</a>
+</li>
+
+<li class="active">
+<a href="/admin/web-history">
+Detection History
+</a>
+</li>
+
+<li>
+<a href="/admin/youtube-history">
+YouTube Analysis
+</a>
+</li>
+
+<li>
+<a href="/admin/settings">
+System Settings
+</a>
+</li>
+
+</ul>
+
+</div>
+
+
+<!-- MAIN -->
+
+<div class="flex-1 p-8">
+
+<h1 class="text-3xl font-bold mb-6">
+Website Detection History
+</h1>
+
+<div class="bg-slate-900 p-6 rounded-xl shadow">
+
+<table class="w-full">
+
+<thead>
+
+<tr class="text-left border-b border-slate-700">
+
 <th>ID</th>
 <th>User</th>
 <th>URL</th>
 <th>Result</th>
 <th>Date</th>
+
 </tr>
 
-{% for row in data %}
-<tr>
+</thead>
+
+<tbody>
+
+{% for row in history %}
+
+<tr class="border-b border-slate-800">
+
 <td>{{row[0]}}</td>
 <td>{{row[1]}}</td>
 <td>{{row[2]}}</td>
-<td>{{row[3]}}</td>
+<td>
+
+{% if row[3] == "PHISHING" %}
+
+<span class="text-red-400 font-bold">
+Phishing
+</span>
+
+{% else %}
+
+<span class="text-green-400 font-bold">
+Safe
+</span>
+
+{% endif %}
+
+</td>
+
 <td>{{row[4]}}</td>
+
 </tr>
+
 {% endfor %}
+
+</tbody>
 
 </table>
 
-<br>
+</div>
 
-<a href="/admin">Back to Dashboard</a>
+</div>
+
+</div>
+
+</body>
+</html>

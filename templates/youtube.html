@@ -1,29 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<title>YouTube Phishing Analysis</title>
+<meta charset="UTF-8">
+<title>YouTube Phishing Checker</title>
+
+<!-- Tailwind (same as dashboard) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+
 </head>
 
-<body>
+<body class="bg-slate-950 text-white">
 
-<h2>YouTube Video Phishing Checker</h2>
+<div class="flex items-center justify-center min-h-screen">
+
+<div class="bg-slate-900/60 border border-slate-700 backdrop-blur-lg p-10 rounded-xl shadow-xl w-[650px]">
+
+<h2 class="text-2xl font-bold text-center text-cyan-400 mb-6">
+🎬 YouTube Phishing Checker
+</h2>
 
 <form method="POST">
-<input type="text" name="video_url" placeholder="Paste YouTube Link" required>
-<button type="submit">Analyze</button>
+
+<input
+type="text"
+name="youtube_url"
+placeholder="Paste YouTube Video Link"
+required
+class="w-full p-3 rounded-lg text-black mb-4"
+/>
+
+<button
+class="w-full bg-cyan-500 hover:bg-cyan-600 p-3 rounded-lg font-semibold">
+Analyze Video
+</button>
+
+</form>
+
+
 {% if result %}
 
-<br><br>
+<div class="flex gap-6 mt-8">
 
-<img src="{{thumbnail}}" width="400">
+<!-- Thumbnail -->
 
-<h3>{{title}}</h3>
+<iframe
+class="w-80 aspect-video rounded-lg shadow-lg"
+src="https://www.youtube.com/embed/{{video_id}}"
+frameborder="0"
+allowfullscreen>
+</iframe>
 
-<p><b>Channel :</b> {{channel}}</p>
+<!-- Details -->
 
-<p><b>Views :</b> {{views}}</p>
+<div>
 
-<h3>{{result}}</h3>
+<h3 class="text-xl font-bold mb-2">
+{{title}}
+</h3>
+
+<p class="opacity-80 mb-1">
+Channel : {{channel}}
+</p>
+
+<p class="opacity-80 mb-4">
+Views : {{views}}
+</p>
+
+{% if "Phishing" in result %}
+
+<div class="bg-red-500 px-4 py-2 rounded-lg">
+⚠ Possible Phishing Video
+</div>
+
+{% else %}
+
+<div class="bg-green-500 px-4 py-2 rounded-lg">
+✅ Safe Video
+</div>
 
 {% endif %}
-</form>
+
+</div>
+
+</div>
+
+{% endif %}
+
+<a href="/dashboard"
+class="block text-center text-cyan-400 mt-6 hover:underline">
+
+← Back to Dashboard
+
+</a>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
