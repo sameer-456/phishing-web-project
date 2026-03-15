@@ -390,41 +390,43 @@ def detect():
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
-        # 2️⃣ Fake https
-        if "httt" in url or "httpssss" in url:
-            result = "PHISHING"
-            confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
-
-        # 3️⃣ IP address URL
+        # 2️⃣ IP address phishing
         ip_pattern = r'http[s]?://\d{1,3}(\.\d{1,3}){3}'
         if re.match(ip_pattern, url):
             result = "PHISHING"
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
-        # 4️⃣ @ symbol phishing
+        # 3️⃣ @ symbol trick
         if "@" in url:
             result = "PHISHING"
             confidence = 95
             return render_template("detect.html", result=result, confidence=confidence)
 
+        # 4️⃣ Suspicious phishing keywords
+        suspicious_words = ["login","bank","secure","verify","update","account","free","gift"]
+
+        if any(word in url.lower() for word in suspicious_words):
+            result = "PHISHING"
+            confidence = 92
+            return render_template("detect.html", result=result, confidence=confidence)
+
         try:
 
-            # Google Safe Browsing
+            # 5️⃣ Google Safe Browsing
             try:
                 google_result = check_google_safe(url)
             except:
-                google_result = "Safe ✅"
+                google_result = "Safe"
 
-            # ML Prediction
+            # 6️⃣ ML Prediction
             try:
                 features = [extract_features(url)]
                 prediction = model.predict(features)[0]
             except:
                 prediction = 0
 
-            # Final Result
+            # 7️⃣ Final Result
             if google_result == "Phishing Detected ⚠️" or prediction == 1:
                 result = "PHISHING"
             else:
@@ -432,7 +434,7 @@ def detect():
 
             confidence = random.randint(85, 98)
 
-            # Save History
+            # 8️⃣ Save History
             conn = sqlite3.connect("users.db")
             cursor = conn.cursor()
 
