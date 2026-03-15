@@ -384,24 +384,25 @@ def detect():
 
         url = url.strip()
 
+        # Default result
+        result = "SAFE"
+        confidence = 90
+
         # 1️⃣ Invalid protocol
         if not url.startswith("http://") and not url.startswith("https://"):
             result = "PHISHING"
             confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
 
         # 2️⃣ IP address phishing
         ip_pattern = r'http[s]?://\d{1,3}(\.\d{1,3}){3}'
         if re.match(ip_pattern, url):
             result = "PHISHING"
             confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
 
         # 3️⃣ @ symbol trick
         if "@" in url:
             result = "PHISHING"
             confidence = 95
-            return render_template("detect.html", result=result, confidence=confidence)
 
         # 4️⃣ Suspicious phishing keywords
         suspicious_words = ["login","bank","secure","verify","update","account","free","gift"]
@@ -409,7 +410,6 @@ def detect():
         if any(word in url.lower() for word in suspicious_words):
             result = "PHISHING"
             confidence = 92
-            return render_template("detect.html", result=result, confidence=confidence)
 
         try:
 
@@ -419,6 +419,11 @@ def detect():
             except:
                 google_result = "Safe"
 
+            # If Google detects phishing
+            if google_result == "Phishing Detected ⚠️":
+                result = "PHISHING"
+                confidence = 96
+
             # 6️⃣ ML Prediction
             try:
                 features = [extract_features(url)]
@@ -426,15 +431,15 @@ def detect():
             except:
                 prediction = 0
 
-            # 7️⃣ Final Result
-            if google_result == "Phishing Detected ⚠️" or prediction == 1:
+            if prediction == 1:
                 result = "PHISHING"
-            else:
-                result = "SAFE"
+                confidence = 94
 
-            confidence = random.randint(85, 98)
+        except Exception as e:
+            print("Detect ERROR:", e)
 
-            # 8️⃣ Save History
+        # 7️⃣ Save History (IMPORTANT FIX)
+        try:
             conn = sqlite3.connect("users.db")
             cursor = conn.cursor()
 
@@ -446,12 +451,8 @@ def detect():
             conn.commit()
             conn.close()
 
-        except Exception as e:
-
-            print("Detect ERROR:", e)
-
-            result = "SAFE"
-            confidence = 80
+        except Exception as db_error:
+            print("DB Error:", db_error)
 
     return render_template(
         "detect.html",
