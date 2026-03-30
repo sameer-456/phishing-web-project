@@ -1,5 +1,52 @@
-<h2>Enter OTP</h2>
-<form method="POST">
-    <input type="text" name="otp" placeholder="Enter OTP" required>
-    <button type="submit">Verify</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OTP Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-white flex items-center justify-center h-screen">
+
+<div class="bg-slate-900 p-10 rounded-2xl shadow-2xl w-[400px] text-center">
+
+    <h2 class="text-2xl font-bold mb-6">
+        🔐 Verify OTP
+    </h2>
+
+    <p class="text-gray-400 mb-4">
+        Enter the OTP sent to your email
+    </p>
+
+    <form method="POST" class="space-y-4">
+
+        <input
+            type="text"
+            name="otp"
+            placeholder="Enter OTP"
+            required
+            class="w-full p-3 rounded bg-slate-800 border border-slate-700 text-center tracking-widest text-lg"
+        />
+
+        <button
+            type="submit"
+            class="w-full bg-cyan-500 hover:bg-cyan-600 p-3 rounded font-bold transition duration-300"
+        >
+            Verify OTP
+        </button>
+
+    </form>
+
+    <!-- Error message -->
+    {% if error %}
+        <p class="text-red-400 mt-4">{{ error }}</p>
+    {% endif %}
+
+    <!-- Back to login -->
+    <a href="/" class="block mt-6 text-cyan-400 hover:underline">
+        ← Back to Login
+    </a>
+
+</div>
+
+</body>
+</html>
